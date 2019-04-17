@@ -19,74 +19,66 @@
 	sat: .asciiz " Sat"
 .text
 main:
-	jal NhapNgay
+	jal Date
 	li $v0,4
 	la $a1,time
 	syscall
 	j KetThuc
 #Nhap Ngay
 Date:
-	addi $sp,$sp,-20
+	addi $sp,$sp,-12
 	sw $ra,($sp)
-	sw $s0,4($sp)
-	sw $s1,8($sp)
-	sw $t0,12($sp)
-	sw $t1,16($sp)
+	sw $t0,4($sp)
+	sw $t1,8($sp)
 	
-	la $t0, time
-	lw $s0,day
 	li $t0,10
-	div $s0,$t0
+	div $a0,$t0
 	mflo $t0
 	mfhi $t1
 	addu $t0,$t0,48
 	addu $t1,$t1,48
-	sb $t0,($a0)
-	sb $t1,1($a0)
+	sb $t0,($a3)
+	sb $t1,1($a3)
 	li $t0,47
-	sb $t0,2($a0)
+	sb $t0,2($a3)
 
-	lw $s0,month
 	li $t0,10
-	div $s0,$t0
+	div $a1,$t0
 	mflo $t0
 	mfhi $t1
 	addu $t0,$t0,48
 	addu $t1,$t1,48
-	sb $t0,3($a0)
-	sb $t1,4($a0)
+	sb $t0,3($a3)
+	sb $t1,4($a3)
 	li $t0,47
-	sb $t0,5($a0)
+	sb $t0,5($a3)
 
-	lw $s0,year
 	li $t0,1000
-	div $s0,$t0
+	div $a2,$t0
 	mflo $t0
 	mfhi $t1
 	addu $t0,$t0,48
-	sb $t0,6($a0)
+	sb $t0,6($a3)
 	li $t0,100
 	div $t1,$t0
 	mflo $t0
 	mfhi $t1
 	addu $t0,$t0,48
-	sb $t0,7($a0)
+	sb $t0,7($a3)
 	li $t0,10
 	div $t1,$t0
 	mflo $t0
 	mfhi $t1
 	addu $t0,$t0,48
 	addu $t1,$t1,48
-	sb $t0,8($a0)
-	sb $t1,9($a0)
-	move $v0,$a0
+	sb $t0,8($a3)
+	sb $t1,9($a3)
+	move $v0,$a3
 
 	lw $ra,($sp)
-	lw $s0,4($sp)
-	lw $s1,8($sp)
-	lw $t0,12($sp)
-	lw $t1,16($sp)
-	addi $sp,$sp,20
+	lw $t0,4($sp)
+	lw $t1,8($sp)
+	addi $sp,$sp,12
 	jr $ra
 #Ham tra ve ngay
 Day:
