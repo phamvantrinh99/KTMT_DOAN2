@@ -19,14 +19,13 @@
 	sat: .asciiz " Sat"
 .text
 main:
-	la $a0,time
 	jal NhapNgay
 	li $v0,4
 	la $a1,time
 	syscall
 	j KetThuc
 #Nhap Ngay
-NhapNgay:
+Time:
 	addi $sp,$sp,-20
 	sw $ra,($sp)
 	sw $s0,4($sp)
@@ -34,32 +33,7 @@ NhapNgay:
 	sw $t0,12($sp)
 	sw $t1,16($sp)
 	
-	#than thu tuc
-	li $v0,4
-	la $a0,prompt1
-	syscall
-	
-	li $v0,5
-	syscall
-	sw $v0,day
-	
-	li $v0,4
-	la $a0,prompt2
-	syscall
-	
-	li $v0,5
-	syscall
-	sw $v0,month
-
-	li $v0,4
-	la $a0,prompt3
-	syscall
-	
-	li $v0,5
-	syscall
-	sw $v0,year
-	
-	#Dua vao chuoi time
+	la $t0, time
 	lw $s0,day
 	li $t0,10
 	div $s0,$t0
@@ -188,37 +162,32 @@ Convert:
 	li $t0,67
 	beq $a1,$t0,Convert_C
 Convert_A: #MM/DD/YYYY
-	addi $sp,$sp, -8
+	addi $sp,$sp, -24
 	sw $ra,($sp)
 	sw $t0,4($sp)
+	sw $t1,8($sp)
+	sw $t2,12($sp)
+	sw $t3,16($sp)
+	sw $t4,20($sp)
 	
-	la $a2,convert_time
-	lb $t0, 0($a0)
-	sw $t0,3($a2)	#[covert_time[3]=D1
-	lb $t0,1($a0)
-	sw $t0,4($a2)	#[covert_time[4]=D2
-	lb $t0,3($a0)
-	sw $t0,0($a2)	#[covert_time[0]=M1
-	lb $t0,4($a0)
-	sw $t0,1($a2)	#[covert_time[1]=M2
-	li $t0,47
-	sw $t0,2($a2)	#[covert_time[2]=' '
-	li $t0,47
-	sw $t0,5($a2)	#[covert_time[5]=','
-	lb $t0,6($a0)
-	sw $t0,6($a2)	#[covert_time[7]=Y1
-	lb $t0,7($a0)
-	sw $t0,7($a2)	#[covert_time[8]=Y2
-	lb $t0,8($a0)
-	sw $t0,8($a2)	#[covert_time[9]=Y3
-	lb $t0,9($a0)
-	sw $t0,9($a2)	#[covert_time[10]=Y4
-	
-	move $v0,$a2
+	lb $t0, 0($a0)		# $t0 = TIME[0]
+	lb $t1, 1($a0)		# $t1 = TIME[1]
+	lb $t3, 3($a0)		# $t3 = TIME[3]
+	lb $t4, 4($a0)		# $t4 = TIME[4]
+	# swap
+	sb $t3, 0($a0)		# TIME[0] = $t3
+	sb $t4, 1($a0)		# TIME[1] = $t4
+	sb $t0, 3($a0)		# TIME[3] = $t0
+	sb $t1, 4($a0)		# TIME[4] = $t1
+	move $v0,$a0
 	
 	lw $ra,($sp)
 	lw $t0,4($sp)
-	addi $sp,$sp, 8
+	lw $t1,8($sp)
+	lw $t2,12($sp)
+	lw $t3,16($sp)
+	lw $t4,20($sp)
+	addi $sp,$sp, 24
 	jr $ra
 
 Convert_B: #MM DD,YYYY
@@ -226,31 +195,7 @@ Convert_B: #MM DD,YYYY
 	sw $ra,($sp)
 	sw $t0,4($sp)
 	
-	la $a2,convert_time
-	lb $t0, 0($a0)
-	sw $t0,3($a2)	#[covert_time[3]=D1
-	lb $t0,1($a0)
-	sw $t0,4($a2)	#[covert_time[4]=D2
-	lb $t0,3($a0)
-	sw $t0,0($a2)	#[covert_time[0]=M1
-	lb $t0,4($a0)
-	sw $t0,1($a2)	#[covert_time[1]=M2
-	li $t0,32
-	sw $t0,2($a2)	#[covert_time[2]=' '
-	li $t0,44
-	sw $t0,5($a2)	#[covert_time[5]=','
-	li $t0,32
-	sw $t0,6($a2)	#[covert_time[6]=' '
-	lb $t0,6($a0)
-	sw $t0,7($a2)	#[covert_time[7]=Y1
-	lb $t0,7($a0)
-	sw $t0,8($a2)	#[covert_time[8]=Y2
-	lb $t0,8($a0)
-	sw $t0,9($a2)	#[covert_time[9]=Y3
-	lb $t0,9($a0)
-	sw $t0,10($a2)	#[covert_time[10]=Y4
 	
-	move $v0,$a2
 	
 	lw $ra,($sp)
 	lw $t0,4($sp)
