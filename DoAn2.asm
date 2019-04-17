@@ -25,7 +25,7 @@ main:
 	syscall
 	j KetThuc
 #Nhap Ngay
-Time:
+Date:
 	addi $sp,$sp,-20
 	sw $ra,($sp)
 	sw $s0,4($sp)
