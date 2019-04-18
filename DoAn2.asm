@@ -3,8 +3,9 @@
 	day: .word 0
 	month: .word 0
 	year: .word 0
-	time: .space 10
-	convert_time: .space 11
+	time: .space 1024
+	Temp1: .space 1024
+	Temp2: .space 1024
 	# prompt
 	prompt1: .asciiz "\nNhap ngay DAY: "
 	prompt2: .asciiz "\nNhap thang MONTH: "
@@ -17,11 +18,42 @@
 	thu: .asciiz " Thu"
 	fri: .asciiz " Fri"
 	sat: .asciiz " Sat"
+	Month_1:
+	.asciiz "January"
+Month_2:
+	.asciiz "February"
+Month_3:
+	.asciiz "March"
+Month_4:
+	.asciiz "April"
+Month_5:
+	.asciiz "May"
+Month_6:
+	.asciiz "June"
+Month_7:
+	.asciiz "July"
+Month_8:
+	.asciiz "August"
+Month_9:
+	.asciiz "September"
+Month_10:
+	.asciiz "October"
+Month_11:
+	.asciiz "November"
+Month_12:
+	.asciiz "December"
 .text
 main:
+	li $a0,12
+	li $a1,2
+	li $a2,1213
+	la $a3,time
 	jal Date
+	la $a0,time
+	li $a1,65
+	jal Convert
 	li $v0,4
-	la $a1,time
+	la $a0,time 
 	syscall
 	j KetThuc
 #Nhap Ngay
@@ -147,13 +179,21 @@ Year:
 	
 #Nhom ham Convert
 Convert:
+	addi $sp,$sp,-8
+	sw $ra,($sp)
+	sw $t0,4($sp)
 	li $t0,65
 	beq $a1,$t0,Convert_A
 	li $t0,66
 	beq $a1,$t0,Convert_B
 	li $t0,67
 	beq $a1,$t0,Convert_C
-Convert_A: #MM/DD/YYYY
+	lw $ra,($sp)
+	lw $t0,4($sp)
+	addi $sp,$sp,8
+	jr $ra
+
+Convert_A: #DD/MM/YYYY -> MM/DD/YYYY
 	addi $sp,$sp, -24
 	sw $ra,($sp)
 	sw $t0,4($sp)
@@ -181,53 +221,205 @@ Convert_A: #MM/DD/YYYY
 	lw $t4,20($sp)
 	addi $sp,$sp, 24
 	jr $ra
-
-Convert_B: #MM DD,YYYY
-	addi $sp,$sp, -8
+	
+Convert_B: # DD/MM/YYYY -> Month DD, YYYY
+	addi $sp,$sp -20
 	sw $ra,($sp)
-	sw $t0,4($sp)
+	sw $a0,16($sp)
+	sw $a1,12($sp)
+	jal Month
+	move $a0,$v0
+	jal Month_in_String
+	sw $v0,4($sp)
 	
+	lw $a0,16($sp)
 	
+	la $t0, Temp1
+	li $t1,32
+	sb $t1,0($t0)
+	lb $t1,0($a0)
+	sb $t1,1($t0)
+	lb $t1,1($a0)
+	sb $t1,2($t0)
+	li $t1,44
+	sb $t1,3($t0)
+	li $t1,32
+	sb $t1,4($t0)
+	lb $t1,6($a0)
+	sb $t1,5($t0)
+	lb $t1,7($a0)
+	sb $t1,6($t0)
+	lb $t1,8($a0)
+	sb $t1,7($t0)
+	lb $t1,9($a0)
+	sb $t1,8($t0)
+	
+	sw $t0,8($sp)
+	
+	lw $a1,4($sp)
+	jal strcat
+	lw $a1,8($sp)
+	jal strcat
+	
+	move $v0,$a0
 	
 	lw $ra,($sp)
-	lw $t0,4($sp)
-	addi $sp,$sp, 8
+	lw $a0,16($sp)
+	lw $a1,12($sp)
+	addi $sp,$sp,20
 	jr $ra
 	
-Convert_C:
-	addi $sp,$sp, -8
+Convert_C: # DD/MM/YYYY -> DD Month, YYYY
+
+	addi $sp,$sp -24
 	sw $ra,($sp)
-	sw $t0,4($sp)
+	sw $a0,20($sp)
+	sw $a1,16($sp)
+	jal Month
+	move $a0,$v0
+	jal Month_in_String
+	sw $v0,4($sp)
 	
-	la $a2,convert_time
-	lb $t0, 0($a0)
-	sw $t0,0($a2)	#[covert_time[3]=D1
-	lb $t0,1($a0)
-	sw $t0,1($a2)	#[covert_time[4]=D2
-	lb $t0,3($a0)
-	sw $t0,3($a2)	#[covert_time[0]=M1
-	lb $t0,4($a0)
-	sw $t0,4($a2)	#[covert_time[1]=M2
-	li $t0,32
-	sw $t0,2($a2)	#[covert_time[2]=' '
-	li $t0,44
-	sw $t0,5($a2)	#[covert_time[5]=','
-	li $t0,32
-	sw $t0,6($a2)	#[covert_time[6]=' '
-	lb $t0,6($a0)
-	sw $t0,7($a2)	#[covert_time[7]=Y1
-	lb $t0,7($a0)
-	sw $t0,8($a2)	#[covert_time[8]=Y2
-	lb $t0,8($a0)
-	sw $t0,9($a2)	#[covert_time[9]=Y3
-	lb $t0,9($a0)
-	sw $t0,10($a2)	#[covert_time[10]=Y4
+	lw $a0,20($sp)
 	
-	move $v0,$a2
+	la $t0, Temp1
+	lb $t1,0($a0)
+	sb $t1,0($t0)
+	lb $t1,1($a0)
+	sb $t1,1($t0)
+	li $t1,32
+	sb $t1,2($t0)
+	
+	sw $t0,8($sp)
+	
+	la $t0,Temp2
+	li $t1,32
+	sb $t1,0($t0)
+	lb $t1,6($a0)
+	sb $t1,1($t0)
+	lb $t1,7($a0)
+	sb $t1,2($t0)
+	lb $t1,8($a0)
+	sb $t1,3($t0)
+	lb $t1,9($a0)
+	sb $t1,4($t0)
+	
+	sw $t0,12($sp)
+	
+	lw $a1,8($sp)
+	jal strcat
+	lw $a1,4($sp)
+	jal strcat
+	lw $a1,12($sp)
+	jal strcat
+	
+	move $v0,$a0
 	
 	lw $ra,($sp)
-	lw $t0,4($sp)
-	addi $sp,$sp, 8
+	lw $a0,20($sp)
+	lw $a1,16($sp)
+	addi $sp,$sp,24
+	jr $ra
+strcat:
+	# save to stack
+	addi $sp, $sp, -8
+	sw $s0, 0($sp)
+	sw $s1, 4($sp)
+
+	add $s0, $zero, $zero		# $s0 la i = 0
+	add $s1, $zero, $zero 		# $s1 la j = 0
+strcat_findEndLoop:
+	add $t3, $a0, $s0
+	lb $t4, 0($t3) 			# $t4 = x[i]
+	beq $t4, $zero, appendLoop	# neu x[i] == '\0'
+	addi $s0, $s0, 1  		# i += 1
+	j strcat_findEndLoop
+appendLoop:
+	add $t4, $a1, $s1 		# $t4 = &y[j]
+	lb $t5, 0($t4) 			# $t5 = y[j]
+	add $t3, $a0, $s0 		# $t3 = &x[i]
+	sb $t5, 0($t3) 			# x[i] = y[j]
+	beq $t5, $zero, strcat_exit	# neu x[i] == '\0'
+	addi $s0, $s0, 1		# i += 1
+	addi $s1, $s1, 1		# j += 1
+	j appendLoop
+strcat_exit:
+	# restore from stack
+	lw $s0, 0($sp)
+	lw $s1, 4($sp)
+	addi $sp, $sp, 8
+	jr $ra
+Month_in_String:
+	slti $t0, $a0, 2 	# if month < 2 => month == 1
+	bne $t0, 0, Jan 	# jump to January
+
+	slti $t0, $a0, 3 	# if month < 3 => month == 2
+	bne $t0, 0, Feb 	# jump to February
+
+	slti $t0, $a0, 4	# if month < 4 => month == 3
+	bne $t0, 0, Mar 	# jump to March
+
+	slti $t0, $a0, 5 	# if month < 5 => month == 4
+	bne $t0, 0, Apr 	# jump to April
+
+	slti $t0, $a0, 6 	# if month < 6 => month == 5
+	bne $t0, 0, May 	# jump to May
+
+	slti $t0, $a0, 7 	# if month < 7 => month == 6
+	bne $t0, 0, Jun 	# jump to June
+
+	slti $t0, $a0, 8 	# if month < 8 => month == 7
+	bne $t0, 0, Jul 	# jump to July
+
+	slti $t0, $a0, 9 	# if month < 9 => month == 8
+	bne $t0, 0, Aug 	# jump to August
+
+	slti $t0, $a0, 10 	# if month < 10 => month == 9
+	bne $t0, 0, Sep 	# jump to September
+
+	slti $t0, $a0, 11 	# if month < 11 => month == 10
+	bne $t0, 0, Oct 	# jump to October
+
+	slti $t0, $a0, 12 	# if month < 12 => month == 11
+	bne $t0, 0, Nov 	# jump to November
+
+	j Dec 			# jump to December
+Jan:
+	la $v0, Month_1
+	j Month_in_Year_exit
+Feb:
+	la $v0, Month_2
+	j Month_in_Year_exit
+Mar:
+	la $v0, Month_3
+	j Month_in_Year_exit
+Apr:
+	la $v0, Month_4
+	j Month_in_Year_exit
+May:
+	la $v0, Month_5
+	j Month_in_Year_exit
+Jun:
+	la $v0, Month_6
+	j Month_in_Year_exit
+Jul:
+	la $v0, Month_7
+	j Month_in_Year_exit
+Aug:
+	la $v0, Month_8
+	j Month_in_Year_exit
+Sep:
+	la $v0, Month_9
+	j Month_in_Year_exit
+Oct:
+	la $v0, Month_10
+	j Month_in_Year_exit
+Nov:
+	la $v0, Month_11
+	j Month_in_Year_exit
+Dec:
+	la $v0, Month_12
+Month_in_Year_exit:
 	jr $ra
 #Ham LeapYear
 LeapYear:
