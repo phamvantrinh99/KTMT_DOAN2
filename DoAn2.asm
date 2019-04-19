@@ -50,7 +50,7 @@ main:
 	la $a3,time
 	jal Date
 	la $a0,time
-	li $a1,65
+	li $a1,67
 	jal Convert
 	li $v0,4
 	la $a0,time 
@@ -257,7 +257,7 @@ Convert_B: # DD/MM/YYYY -> Month DD, YYYY
 	sw $t0,8($sp)
 	
 	lw $a1,4($sp)
-	jal strcat
+	jal strcpy
 	lw $a1,8($sp)
 	jal strcat
 	
@@ -293,21 +293,23 @@ Convert_C: # DD/MM/YYYY -> DD Month, YYYY
 	sw $t0,8($sp)
 	
 	la $t0,Temp2
-	li $t1,32
+	li $t1,44
 	sb $t1,0($t0)
-	lb $t1,6($a0)
+	li $t1,32
 	sb $t1,1($t0)
-	lb $t1,7($a0)
+	lb $t1,6($a0)
 	sb $t1,2($t0)
-	lb $t1,8($a0)
+	lb $t1,7($a0)
 	sb $t1,3($t0)
-	lb $t1,9($a0)
+	lb $t1,8($a0)
 	sb $t1,4($t0)
+	lb $t1,9($a0)
+	sb $t1,5($t0)
 	
 	sw $t0,12($sp)
 	
 	lw $a1,8($sp)
-	jal strcat
+	jal strcpy
 	lw $a1,4($sp)
 	jal strcat
 	lw $a1,12($sp)
@@ -320,6 +322,27 @@ Convert_C: # DD/MM/YYYY -> DD Month, YYYY
 	lw $a1,16($sp)
 	addi $sp,$sp,24
 	jr $ra
+	
+# Ham copy chuoi a1 vào chuoi a0
+strcpy:
+	addi $sp, $sp, -4
+	sw $s0, 0($sp)
+
+	add $s0, $zero, $zero 	
+strcpy_loop:
+	add $t0, $s0, $a1
+	lb $t1, 0($t0) 
+	add $t2, $s0, $a0
+	sb $t1, 0($t2) 
+	beq $t1, $zero, strcpy_exit
+	addi $s0, $s0, 1
+	j strcpy_loop
+strcpy_exit:
+	lw $s0, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra
+
+# Ham noi cuoi a1 vào chuoi a0
 strcat:
 	# save to stack
 	addi $sp, $sp, -8
@@ -349,6 +372,7 @@ strcat_exit:
 	lw $s1, 4($sp)
 	addi $sp, $sp, 8
 	jr $ra
+	
 Month_in_String:
 	slti $t0, $a0, 2 	# if month < 2 => month == 1
 	bne $t0, 0, Jan 	# jump to January
